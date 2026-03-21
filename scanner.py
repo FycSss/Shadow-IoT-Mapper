@@ -13,8 +13,18 @@ from datetime import datetime, timezone
 from zeroconf import ServiceBrowser, Zeroconf
 
 try:
-    from scapy.all import (ARP, IP, TCP, UDP, Raw, arping, conf, send, sniff,
-                           sr)
+    from scapy.all import (
+        ARP,
+        IP,
+        TCP,
+        UDP,
+        Raw,
+        arping,
+        conf,
+        send,
+        sniff,
+        sr,
+    )
 except Exception as exc:  # pragma: no cover - runtime dependency guard
     print(f"[!] Unable to import scapy: {exc}")
     sys.exit(1)
@@ -73,6 +83,7 @@ def mdns_scan(timeout: int = 6):
                 services.append(record)
                 log_discovery(f"mDNS: {name} @ {addr}:{info.port} ({service_type})")
 
+        # Zeroconf uses both add_service and update_service callbacks; reuse logic.
         update_service = add_service
 
         def remove_service(self, *args, **kwargs):
