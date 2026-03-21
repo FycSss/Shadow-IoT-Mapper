@@ -8,7 +8,7 @@ import json
 import socket
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from zeroconf import ServiceBrowser, Zeroconf
 
@@ -39,6 +39,9 @@ def log_info(message: str):
     print(f"{Colors.BLUE}[*] {message}{Colors.RESET}")
 
 
+MDNS_SERVICE_INFO_TIMEOUT_MS = 2000
+
+
 def expand_targets(target: str):
     try:
         network = ipaddress.ip_network(target, strict=False)
@@ -56,7 +59,9 @@ def mdns_scan(timeout: int = 6):
 
     class BrowserListener:
         def add_service(self, zc, service_type, name):
-            info = zc.get_service_info(service_type, name, timeout=2000)
+            info = zc.get_service_info(
+                service_type, name, timeout=MDNS_SERVICE_INFO_TIMEOUT_MS
+            )
             if info:
                 addr = socket.inet_ntoa(info.addresses[0]) if info.addresses else "unknown"
                 record = {
@@ -69,7 +74,9 @@ def mdns_scan(timeout: int = 6):
                 log_discovery(f"mDNS: {name} @ {addr}:{info.port} ({service_type})")
 
         update_service = add_service
-        remove_service = lambda *args, **kwargs: None  # noqa: E731
+
+        def remove_service(self, *args, **kwargs):
+            return None
 
     log_info("Starting mDNS discovery...")
     browser = ServiceBrowser(zeroconf, "_services._dns-sd._udp.local.", BrowserListener())
@@ -80,11 +87,14 @@ def mdns_scan(timeout: int = 6):
 
 
 def upnp_scan(timeout: int = 4):
+    def parse_header_value(line: str) -> str:
+        return line.split(":", 1)[1].strip() if ":" in line else ""
+
     ssdp_payload = "\r\n".join(
         [
             "M-SEARCH * HTTP/1.1",
             "HOST:239.255.255.250:1900",
-            'ST:urn:schemas-upnp-org:device:InternetGatewayDevice:1',
+            "ST:urn:schemas-upnp-org:device:InternetGatewayDevice:1",
             "MAN:\"ssdp:discover\"",
             "MX:2",
             "",
@@ -111,10 +121,12 @@ def upnp_scan(timeout: int = 4):
             location_line = next(
                 (line for line in raw.splitlines() if line.lower().startswith("location")), ""
             )
+            server_value = parse_header_value(server_line)
+            location_value = parse_header_value(location_line)
             record = {
                 "source": src,
-                "server": server_line.split(":", 1)[-1].strip() if server_line else "",
-                "location": location_line.split(":", 1)[-1].strip() if location_line else "",
+                "server": server_value,
+                "location": location_value,
             }
             responses.append(record)
             log_discovery(f"UPnP: {src} {record['server']}".strip())
@@ -181,7 +193,7 @@ def export_network_map(target: str, output_path: str = "network_map.json"):
         for host in hosts:
             log_discovery(f"Host: {host['ip']} ({host['mac']})")
     payload = {
-        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "target": target,
         "hosts": hosts,
     }
