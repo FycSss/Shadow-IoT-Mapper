@@ -50,7 +50,7 @@ def log_info(message: str):
 
 
 MDNS_SERVICE_INFO_TIMEOUT_MS = 2000
-SYN_ACK_FLAGS = 0x12
+SYN_ACK_FLAGS = 0x12  # SYN and ACK flags set together
 
 
 def expand_targets(target: str):
@@ -96,7 +96,7 @@ def mdns_scan(timeout: int = 6):
                 services.append(record)
                 log_discovery(f"mDNS: {name} @ {addr}:{info.port} ({service_type})")
 
-        # Zeroconf's ServiceBrowser expects update_service even though we treat updates as adds.
+        # Zeroconf ServiceBrowser still calls update_service; we treat updates the same as adds.
         update_service = add_service
 
         def remove_service(self, *args, **kwargs):
@@ -106,7 +106,6 @@ def mdns_scan(timeout: int = 6):
     browser = ServiceBrowser(zeroconf, "_services._dns-sd._udp.local.", BrowserListener())
     time.sleep(timeout)
     zeroconf.close()
-    del browser
     return services
 
 
@@ -170,7 +169,7 @@ def printer_scan(target: str, ports=None):
     findings = []
     for sent, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:
+        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # require SYN|ACK
             record = {"host": received[IP].src, "port": tcp.sport}
             findings.append(record)
             desc = f"Printer service open on {record['host']}:{record['port']}"
@@ -189,7 +188,7 @@ def credential_audit(target: str, ports=None):
     issues = []
     for _, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:
+        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # require SYN|ACK
             host = received[IP].src
             port = tcp.sport
             issues.append({"host": host, "port": port})
