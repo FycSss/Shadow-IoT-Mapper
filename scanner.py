@@ -50,7 +50,7 @@ def log_info(message: str):
 
 
 MDNS_SERVICE_INFO_TIMEOUT_MS = 2000
-SYN_ACK_FLAGS = 0x12  # SYN and ACK flags set together
+SYN_ACK_FLAGS = 0x12  # SYN+ACK response (0x02 | 0x10)
 
 
 def expand_targets(target: str):
@@ -96,7 +96,7 @@ def mdns_scan(timeout: int = 6):
                 services.append(record)
                 log_discovery(f"mDNS: {name} @ {addr}:{info.port} ({service_type})")
 
-        # Zeroconf ServiceBrowser still calls update_service; we treat updates the same as adds.
+        # Zeroconf ServiceBrowser invokes update_service on PTR changes; treat updates same as adds.
         update_service = add_service
 
         def remove_service(self, *args, **kwargs):
