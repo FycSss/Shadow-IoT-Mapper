@@ -170,7 +170,7 @@ def printer_scan(target: str, ports=None):
     findings = []
     for sent, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and tcp.flags & SYN_ACK_FLAGS:
+        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:
             record = {"host": received[IP].src, "port": tcp.sport}
             findings.append(record)
             desc = f"Printer service open on {record['host']}:{record['port']}"
@@ -189,7 +189,7 @@ def credential_audit(target: str, ports=None):
     issues = []
     for _, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and tcp.flags & SYN_ACK_FLAGS:
+        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:
             host = received[IP].src
             port = tcp.sport
             issues.append({"host": host, "port": port})
