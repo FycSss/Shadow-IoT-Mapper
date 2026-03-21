@@ -74,7 +74,7 @@ def mdns_scan(timeout: int = 6):
             if (service_type, name) in seen_services:
                 return
             info = zc.get_service_info(
-                service_type, name, timeout=MDNS_SERVICE_INFO_TIMEOUT_MS  # milliseconds (2s)
+                service_type, name, timeout=MDNS_SERVICE_INFO_TIMEOUT_MS  # 2000ms (2s)
             )
             if info:
                 addr = "unknown"
@@ -169,7 +169,7 @@ def printer_scan(target: str, ports=None):
     findings = []
     for sent, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # SYN+ACK confirms the port accepted the handshake (not RST)
+        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # SYN+ACK confirms the port accepted the handshake; RST/RST+ACK imply closed
             record = {"host": received[IP].src, "port": tcp.sport}
             findings.append(record)
             desc = f"Printer service open on {record['host']}:{record['port']}"
@@ -188,7 +188,7 @@ def credential_audit(target: str, ports=None):
     issues = []
     for _, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # SYN+ACK indicates the management port is listening
+        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # SYN+ACK indicates the management port is listening; RST variants show refusal
             host = received[IP].src
             port = tcp.sport
             issues.append({"host": host, "port": port})
