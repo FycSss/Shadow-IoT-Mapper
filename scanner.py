@@ -50,6 +50,7 @@ def log_info(message: str):
 
 
 MDNS_SERVICE_INFO_TIMEOUT_MS = 2000
+SYN_ACK_FLAGS = 0x12
 
 
 def expand_targets(target: str):
@@ -66,14 +67,26 @@ def expand_targets(target: str):
 def mdns_scan(timeout: int = 6):
     zeroconf = Zeroconf()
     services = []
+    seen_services = set()
 
     class BrowserListener:
         def add_service(self, zc, service_type, name):
+            if (service_type, name) in seen_services:
+                return
             info = zc.get_service_info(
                 service_type, name, timeout=MDNS_SERVICE_INFO_TIMEOUT_MS
             )
             if info:
-                addr = socket.inet_ntoa(info.addresses[0]) if info.addresses else "unknown"
+                addr = "unknown"
+                if info.addresses:
+                    try:
+                        if len(info.addresses[0]) == 4:
+                            addr = socket.inet_ntop(socket.AF_INET, info.addresses[0])
+                        elif len(info.addresses[0]) == 16:
+                            addr = socket.inet_ntop(socket.AF_INET6, info.addresses[0])
+                    except OSError:
+                        addr = "unknown"
+                seen_services.add((service_type, name))
                 record = {
                     "name": name,
                     "type": service_type,
@@ -157,7 +170,7 @@ def printer_scan(target: str, ports=None):
     findings = []
     for sent, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and tcp.flags & 0x12:  # SYN-ACK
+        if tcp and tcp.flags & SYN_ACK_FLAGS:  # SYN-ACK
             record = {"host": received[IP].src, "port": tcp.sport}
             findings.append(record)
             desc = f"Printer service open on {record['host']}:{record['port']}"
@@ -176,7 +189,7 @@ def credential_audit(target: str, ports=None):
     issues = []
     for _, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and tcp.flags & 0x12:
+        if tcp and tcp.flags & SYN_ACK_FLAGS:
             host = received[IP].src
             port = tcp.sport
             issues.append({"host": host, "port": port})

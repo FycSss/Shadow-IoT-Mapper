@@ -15,6 +15,6 @@ else
 fi
 
 echo "[*] Setting execute permissions..."
-chmod +x shadowiot.sh setup.sh scanner.py
+chmod +x shadowiot.sh setup.sh
 
 echo "[+] Setup complete. Run ./shadowiot.sh to launch ShadowIoT."
