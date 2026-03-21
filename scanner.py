@@ -96,7 +96,7 @@ def mdns_scan(timeout: int = 6):
                 services.append(record)
                 log_discovery(f"mDNS: {name} @ {addr}:{info.port} ({service_type})")
 
-        # Zeroconf ServiceBrowser invokes update_service on PTR changes; treat updates same as adds.
+        # Zeroconf ServiceBrowser invokes update_service on PTR changes; seen_services prevents duplicates so we handle updates like adds.
         update_service = add_service
 
         def remove_service(self, *args, **kwargs):
@@ -169,7 +169,7 @@ def printer_scan(target: str, ports=None):
     findings = []
     for sent, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # require SYN|ACK
+        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # require SYN+ACK to confirm open TCP service
             record = {"host": received[IP].src, "port": tcp.sport}
             findings.append(record)
             desc = f"Printer service open on {record['host']}:{record['port']}"
@@ -188,7 +188,7 @@ def credential_audit(target: str, ports=None):
     issues = []
     for _, received in answered:
         tcp = received.getlayer(TCP)
-        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # require SYN|ACK
+        if tcp and (tcp.flags & SYN_ACK_FLAGS) == SYN_ACK_FLAGS:  # require SYN+ACK to verify exposed management port
             host = received[IP].src
             port = tcp.sport
             issues.append({"host": host, "port": port})
