@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # ShadowIoT - Red Team Network Mapper
 
+# Ensure the script always runs with Bash even if invoked with sh.
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec /usr/bin/env bash "$0" "$@"
+fi
+
 BOLD="\033[1m"
 RED="\033[1;31m"
 GREEN="\033[1;32m"
