@@ -31,7 +31,7 @@ require_python() {
 
 prompt_target() {
   local target
-  read -rp "$(echo -e \"${BOLD}Enter Target IP/Range (e.g., 192.168.1.0/24): ${RESET}\")" target
+  read -rp "${BOLD}Enter Target IP/Range (e.g., 192.168.1.0/24): ${RESET}" target
   echo "$target"
 }
 
@@ -39,7 +39,13 @@ run_scanner() {
   local mode="$1"
   local target="$2"
   require_python
-  python3 "$(dirname "$0")/scanner.py" --mode "$mode" --target "$target"
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local py="${script_dir}/.venv/bin/python"
+  if [[ ! -x "$py" ]]; then
+    py="python3"
+  fi
+  "$py" "${script_dir}/scanner.py" --mode "$mode" --target "$target"
 }
 
 main_menu() {
@@ -51,27 +57,27 @@ main_menu() {
     echo -e "${BOLD}[4]${RESET} Export Network Map (JSON)"
     echo -e "${BOLD}[0]${RESET} Exit"
     echo
-    read -rp "$(echo -e \"${BOLD}Select an option: ${RESET}\")" choice
+    read -rp "${BOLD}Select an option: ${RESET}" choice
     case "$choice" in
       1)
         target=$(prompt_target)
         run_scanner "mdns-upnp" "$target"
-        read -rp "$(echo -e \"${BLUE}Press enter to return to the menu...${RESET}\")"
+        read -rp "${BLUE}Press enter to return to the menu...${RESET}"
         ;;
       2)
         target=$(prompt_target)
         run_scanner "printers" "$target"
-        read -rp "$(echo -e \"${BLUE}Press enter to return to the menu...${RESET}\")"
+        read -rp "${BLUE}Press enter to return to the menu...${RESET}"
         ;;
       3)
         target=$(prompt_target)
         run_scanner "creds" "$target"
-        read -rp "$(echo -e \"${BLUE}Press enter to return to the menu...${RESET}\")"
+        read -rp "${BLUE}Press enter to return to the menu...${RESET}"
         ;;
       4)
         target=$(prompt_target)
         run_scanner "export" "$target"
-        read -rp "$(echo -e \"${BLUE}Press enter to return to the menu...${RESET}\")"
+        read -rp "${BLUE}Press enter to return to the menu...${RESET}"
         ;;
       0)
         echo -e "${GREEN}[+] Stay stealthy. Exiting.${RESET}"
