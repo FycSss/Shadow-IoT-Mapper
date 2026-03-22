@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 # ShadowIoT - Red Team Network Mapper
 
+# Ensure the script always runs with Bash even if invoked with sh. Avoid re-exec loops.
+if [ -z "${BASH_VERSION:-}" ]; then
+  if [ -n "${SHADOWIOT_BASH_REEXEC:-}" ]; then
+    echo "[!] Bash is required to run shadowiot.sh." >&2
+    exit 1
+  fi
+  if ! bash_path="$(command -v bash)"; then
+    echo "[!] Unable to locate bash in PATH." >&2
+    exit 1
+  fi
+  SHADOWIOT_BASH_REEXEC=1 exec "$bash_path" "$0" "$@"
+fi
+
 BOLD="\033[1m"
 RED="\033[1;31m"
 GREEN="\033[1;32m"
