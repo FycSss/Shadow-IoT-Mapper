@@ -7,7 +7,12 @@ if [ -z "${BASH_VERSION:-}" ]; then
     echo "[!] Bash is required to run shadowiot.sh." >&2
     exit 1
   fi
-  SHADOWIOT_BASH_REEXEC=1 exec /usr/bin/env bash "$0" "$@"
+  bash_path="$(command -v bash || true)"
+  if [ -z "$bash_path" ]; then
+    echo "[!] Unable to locate bash in PATH." >&2
+    exit 1
+  fi
+  SHADOWIOT_BASH_REEXEC=1 exec "$bash_path" "$0" "$@"
 fi
 
 BOLD="\033[1m"
