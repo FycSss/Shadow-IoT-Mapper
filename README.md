@@ -2,13 +2,18 @@
 
 ShadowIoT is a red-team flavored network mapper for quick discovery of IoT devices.
 
-## Setup
+## Setup (after download)
 
+1) Prereqs: Python 3 with the `venv` module (`sudo apt install python3 python3-venv` on Debian/Kali/Ubuntu).
+2) Make the scripts executable (first time only):
+```bash
+chmod +x setup.sh shadowiot.sh scanner.py
+```
+3) Install deps into a local `.venv` so it works even on locked-down systems (e.g., Kali with PEP 668):
 ```bash
 ./setup.sh
 ```
-
-The setup script creates a local `.venv` and installs dependencies there so it works on environments that block system-wide `pip` installs (e.g., Kali with PEP 668). The launcher automatically uses this virtual environment.
+The launcher automatically uses this virtual environment.
 
 ## Usage
 
