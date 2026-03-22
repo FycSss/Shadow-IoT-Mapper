@@ -2,24 +2,38 @@
 
 ShadowIoT is a red-team flavored network mapper for quick discovery of IoT devices.
 
-## Setup (after download)
+## Setup
 
-1) Prereqs: Python 3 with the `venv` module (`sudo apt install python3 python3-venv` on Debian/Kali/Ubuntu).
-2) Make the scripts executable (first time only):
+On Kali/WSL/Linux, use a virtual environment to avoid system Python restrictions:
+
 ```bash
-chmod +x setup.sh shadowiot.sh scanner.py
-```
-3) Install deps into a local `.venv` so it works even on locked-down systems (e.g., Kali with PEP 668):
-```bash
+cd Shadow-IoT-Mapper
 ./setup.sh
 ```
-The launcher automatically uses this virtual environment.
 
-## Usage
+This will:
+
+- Create `.venv` in the project
+- Install `zeroconf` and `scapy` into the virtual environment
+
+To manually activate the environment later:
 
 ```bash
+source .venv/bin/activate
+```
+
+## Running Shadow IoT Mapper
+
+After setup:
+
+```bash
+cd Shadow-IoT-Mapper
+source .venv/bin/activate
 ./shadowiot.sh
 ```
+
+`shadowiot.sh` will automatically use `.venv` even if you skip manual activation, but activating ensures any follow-on Python commands also use the virtual environment.
+It locates the bundled `.venv/bin/python` at runtime, so manual activation is optional for running the tool itself.
 
 Menu options:
 
