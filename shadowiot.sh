@@ -7,8 +7,7 @@ if [ -z "${BASH_VERSION:-}" ]; then
     echo "[!] Bash is required to run shadowiot.sh." >&2
     exit 1
   fi
-  bash_path="$(command -v bash || true)"
-  if [ -z "$bash_path" ]; then
+  if ! bash_path="$(command -v bash)"; then
     echo "[!] Unable to locate bash in PATH." >&2
     exit 1
   fi
