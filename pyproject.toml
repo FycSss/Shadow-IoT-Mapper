@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shadow-iot-mapper"
+version = "0.1.0"
+description = "ShadowIoT Mapper: passive LAN discovery and safe active enrichment for IoT asset inventory."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "ShadowIoT Maintainers" }]
+license = { text = "MIT" }
+dependencies = [
+  "scapy>=2.5.0",
+  "zeroconf>=0.132.2",
+  "manuf>=1.1.5",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0",
+  "pytest-mock>=3.14.0",
+  "ruff>=0.6.0",
+]
+
+[project.scripts]
+shadowiot = "shadowiot.cli:main"
+
+[tool.setuptools.packages.find]
+exclude = ["tests*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+extend-exclude = ["scanner.py", "shadowiot.sh", "setup.sh", "setup_venv.sh"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
