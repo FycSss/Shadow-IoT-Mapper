@@ -31,7 +31,8 @@ require_python() {
 
 prompt_target() {
   local target
-  read -rp "${BOLD}Enter Target IP/Range (e.g., 192.168.1.0/24): ${RESET}" target
+  printf "%b" "${BOLD}Enter Target IP/Range (e.g., 192.168.1.0/24): ${RESET}"
+  read -r target
   echo "$target"
 }
 
