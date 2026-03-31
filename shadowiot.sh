@@ -71,7 +71,7 @@ main_menu() {
     echo -e "${BOLD}[4]${RESET} Export Network Map (JSON)"
     echo -e "${BOLD}[0]${RESET} Exit"
     echo
-    read -rp "${BOLD}Select an option: ${RESET}" choice
+    read -rp "Select an option: " choice
     case "$choice" in
       1)
         target=$(prompt_target)
