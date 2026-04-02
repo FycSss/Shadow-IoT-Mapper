@@ -238,8 +238,8 @@ def parse_args():
     )
     parser.add_argument(
         "--target",
-        required=True,
-        help="Target IP or CIDR range (e.g., 192.168.1.0/24)",
+        default=None,
+        help="Target IP or CIDR range (e.g., 192.168.1.0/24). Required for printers, creds, and export modes.",
     )
     return parser.parse_args()
 
@@ -251,10 +251,19 @@ def main():
         mdns_scan()
         upnp_scan()
     elif args.mode == "printers":
+        if not args.target:
+            log_vuln("--target is required for printers mode.")
+            sys.exit(1)
         printer_scan(args.target)
     elif args.mode == "creds":
+        if not args.target:
+            log_vuln("--target is required for creds mode.")
+            sys.exit(1)
         credential_audit(args.target)
     elif args.mode == "export":
+        if not args.target:
+            log_vuln("--target is required for export mode.")
+            sys.exit(1)
         export_network_map(args.target)
     else:  # pragma: no cover - argparse handles choices
         log_info("Unknown mode selected.")
