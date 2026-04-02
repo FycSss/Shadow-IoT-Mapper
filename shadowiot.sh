@@ -44,14 +44,14 @@ require_python() {
 
 prompt_target() {
   local target
-  printf "%b" "${BOLD}Enter Target IP/Range (e.g., 192.168.1.0/24): ${RESET}"
+  printf "%b" "${BOLD}Enter Target IP/Range (e.g., 192.168.1.0/24): ${RESET}" >&2
   read -r target
   echo "$target"
 }
 
 run_scanner() {
   local mode="$1"
-  local target="$2"
+  local target="${2:-}"
   require_python
   local script_dir
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -59,7 +59,11 @@ run_scanner() {
   if [[ ! -x "$py" ]]; then
     py="python3"
   fi
-  "$py" "${script_dir}/scanner.py" --mode "$mode" --target "$target"
+  if [[ -n "$target" ]]; then
+    "$py" "${script_dir}/scanner.py" --mode "$mode" --target "$target"
+  else
+    "$py" "${script_dir}/scanner.py" --mode "$mode"
+  fi
 }
 
 main_menu() {
@@ -74,24 +78,27 @@ main_menu() {
     read -rp "Select an option: " choice
     case "$choice" in
       1)
-        target=$(prompt_target)
-        run_scanner "mdns-upnp" "$target"
-        read -rp "${BLUE}Press enter to return to the menu...${RESET}"
+        run_scanner "mdns-upnp"
+        echo -e "${BLUE}Press enter to return to the menu...${RESET}"
+        read -r
         ;;
       2)
         target=$(prompt_target)
         run_scanner "printers" "$target"
-        read -rp "${BLUE}Press enter to return to the menu...${RESET}"
+        echo -e "${BLUE}Press enter to return to the menu...${RESET}"
+        read -r
         ;;
       3)
         target=$(prompt_target)
         run_scanner "creds" "$target"
-        read -rp "${BLUE}Press enter to return to the menu...${RESET}"
+        echo -e "${BLUE}Press enter to return to the menu...${RESET}"
+        read -r
         ;;
       4)
         target=$(prompt_target)
         run_scanner "export" "$target"
-        read -rp "${BLUE}Press enter to return to the menu...${RESET}"
+        echo -e "${BLUE}Press enter to return to the menu...${RESET}"
+        read -r
         ;;
       0)
         echo -e "${GREEN}[+] Stay stealthy. Exiting.${RESET}"
